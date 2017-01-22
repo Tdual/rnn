@@ -6,8 +6,12 @@ import data_helper as dh
 max_size = 2000
 class_num = 200
 
-data, one_hots, dic_size = dh.get_tf_data(
-    max_seq_size=max_size, class_num=class_num, max_data_num=2000)
+
+#data, one_hots, dic_size = dh.get_tf_data(
+#    max_seq_size=max_size, class_num=class_num, max_data_num=2000)
+data, one_hots, dic_size = dh.read_tf_data()
+
+
 data_size = len(one_hots)
 train_size = int(data_size*0.9)
 test_size = data_size - train_size

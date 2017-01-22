@@ -60,18 +60,16 @@ def tags_to_one_hots(tags, dim=100, tag_dic=None):
         one_hot_data.append(d)
     return one_hot_data
 
-def wakati(data, one_hots, max_seq_size=2000):
+def wakati(data, max_seq_size=2000):
     tagger = MeCab.Tagger('-Owakati -d /usr/local/lib/mecab/dic/mecab-ipadic-neologd')
     contents = []
-    new_one_hots = []
-    for b,oh in zip(data,one_hots):
+    for b in data:
         word = tagger.parse(b).split(' ')
         word = [w.strip() for w in word ]
         if len(word) > max_seq_size:
             word = word[:max_seq_size]
         contents.append(word)
-        new_one_hots.append(oh)
-    return contents, new_one_hots
+    return contents
 
 def pad_seq(seqs, max_size=2000):
     return [s + ["<PAD/>"] * (max_size - len(s)) for s in seqs]
@@ -83,16 +81,33 @@ def create_num_vecs(seqs):
     dic_size = len(word_dic)
     return data, dic_size
 
+def read_csv():
+    df2 = pd.read_csv("data.csv",index_col="Unnamed: 0")
+    data = []
+    for i in range(len(df2)):
+        data.append(df2.ix[i,:])
+    return data
+
 def get_tf_data(max_seq_size=2000, class_num=100, max_data_num=0):
     json_data = get_data(max_data_num)
     bodies, tags = get_bodies_tags(json_data)
+
     one_hots = tags_to_one_hots(tags, class_num)
-    data, oh = wakati(bodies, one_hots, max_seq_size)
+
+    data = wakati(bodies, max_seq_size)
     padded_data = pad_seq(data, max_seq_size)
     data, dic_size = create_num_vecs(padded_data)
-    return data, oh, dic_size
-    
-    
 
+    return data, one_hots, dic_size
 
+def read_tf_data():
+    df = pd.read_csv("data.csv",index_col="Unnamed: 0")
+    df2 = pd.read_csv("one_hots.csv",index_col="Unnamed: 0")
+    data = []
+    one_hots = []
+    for i in range(len(df2)):
+        data.append(df.ix[i,:])
+        one_hots.append(df2.ix[i,:])
+    dic_size = max(df.max().tolist()) + 1 
+    return data, one_hots, dic_size
 
